@@ -24,7 +24,9 @@ horizon_intervals = agg_optimisation_horizon/interval_duration
 nu = 0.05 #fraction of expected/allowable offline nodes
 t_start = 3456 #First interval to run on. t=0 is reserved for initialisation.
 t_end = number_of_intervals - agg_optimisation_horizon #If we end after this, the opt horizon is insufficient.
-
+current_experiment = {}
+cf_import = 0.9 #Import constraint factor used by the strategic IOE calculator to estimate network constraint.
+cf_export = 0.9 #Export "" ""
 #DSO
 #
 
@@ -33,7 +35,6 @@ dso_inputs = {
         'buses' :       pd.read_csv('dso_data/buses.csv'),
         'V_max' :       1.04,
         'V_min' :       0.96,
-        'V_tolerance' : 0.5,
         'V_ref':        1.01,
         
         }
@@ -42,21 +43,19 @@ feeder = {'is_built': False}
 
 
 
-log.basicConfig(level=log.INFO)
-
 #Aggregators
 
 aggregators = [
     {
       'AggregatorID' : 1,
-      'Number of Nodes' : 40,
+      'Number of Nodes' : 30,
       'Behaviour' : 'Strategic',
       'Nodes' : dict(),
       'Expected Offline Fraction': nu,
       },
     {
       'AggregatorID' : 2,
-      'Number of Nodes' : 40,
+      'Number of Nodes' : 30,
       'Behaviour' : 'Non-strategic',
       'Nodes': dict(),
       'Expected Offline Fraction' : nu,
@@ -83,6 +82,34 @@ aggregator_inputs = {
     }
 
 log.info('Configuration data imported.')
+
+#### Additional options for DSO inputs, used in ConfigureExperiments.py
+
+dso_options = [ #Options for conf.dso_inputs
+    {
+            'lines' :       pd.read_csv('dso_data/lines.csv'),
+            'buses' :       pd.read_csv('dso_data/buses.csv'),
+            'V_max' :       1.05,
+            'V_min' :       0.95,
+            'V_ref':        1.01,
+            
+            },
+    {
+            'lines' :       pd.read_csv('dso_data/lines.csv'),
+            'buses' :       pd.read_csv('dso_data/buses.csv'),
+            'V_max' :       1.04,
+            'V_min' :       0.96,
+            'V_ref':        1.01,
+            
+            },
+    ]
+
+
+
+
+
+
+
 
 #Shortuts for tunable solver instances
 
