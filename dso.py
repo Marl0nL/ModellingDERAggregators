@@ -45,7 +45,7 @@ def build_DSO_OPF(feeder, t, dso_inputs=c.dso_inputs):
         # C_export = 1 - m.export_DOE[n,t]/nodes[n]['export_IOE'][t]
         # C_import = 1 - m.import_DOE[n,t]/nodes[n]['export_IOE'][t]
         # return sum(C_export + C_import for n in nodes.keys())
-        return sum((nodes[n]['data']['upper_IOE'][t] - model.import_DOE[n] + model.export_DOE[n] - nodes[n]['data']['lower_IOE'][t])**2 / (nodes[n]['data']['upper_IOE'][t] - nodes[n]['data']['lower_IOE'][t])
+        return sum(((nodes[n]['data']['upper_IOE'][t] - model.import_DOE[n] + model.export_DOE[n] - nodes[n]['data']['lower_IOE'][t]) / (nodes[n]['data']['upper_IOE'][t] - nodes[n]['data']['lower_IOE'][t]))**2
                    for n in nodes.keys()
                    )
     

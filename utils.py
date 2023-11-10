@@ -93,6 +93,8 @@ def data_dump(results,aggregators,T,name=''):
         folder = 'results/'+name+'_Aggregator'+str(aggregator['AggregatorID'])+'_'+ts
         for node in aggregator['Nodes'].keys():
             aggregator['Nodes'][node].iloc[T].to_csv(folder+'/node'+str(node)+'.csv')
+    
+
         
 def pickle_feeder(feeder,fname):
     with open(fname,'wb') as f:
@@ -117,18 +119,31 @@ def unpickle_aggregators(fname):
         f.close()
     return agglist
 
-def pickle_experiment(feeder,agglist,name):
+def pickle_experiment_metadata(experiment,fname):
+    with open(fname,'wb') as f:
+        pickle.dump(experiment,f)
+        f.close()
+
+
+def pickle_experiment(feeder,agglist,name,experiment):
     directory = 'experiments/'+name
     if not os.path.exists(directory):
         os.mkdir(directory)
     
     pickle_feeder(feeder,directory+'/feeder.pkl')
     pickle_aggregators(agglist,directory+'/aggregators.pkl')
+    pickle_experiment_metadata(experiment,directory+'/metadata.pkl')
     log.info(f'Experiment configuration {name} has been pickled.')
     
 def unpickle_experiment(name):
     aggs = unpickle_aggregators('experiments/'+name+'/aggregators.pkl')
     feeder = unpickle_feeder('experiments/'+name+'/feeder.pkl')
+    
+    for a in aggs: #Re-link the node dataframes references by the feeder and the aggregators.
+        for n in a['Nodes'].keys():
+            name = (a['AggregatorID'],n)
+            feeder['nodes'][name]['data'] = a['Nodes'][n]
+    
     return feeder, aggs
 
 def graph_average_node(aggregator,T):

@@ -79,6 +79,8 @@ def Compute_Strategic_IOEs(mx,aggregator,t,solve=True):
     def Expected_eDOE_Rule(m, n):
         return m.expected_export_DOE[n] == np.mean(nodes[n]['export_DOE'][t-(1+highsight_horizon):t-1])
     
+
+    
     ##### Nested DSO Problem ########   
     
     
@@ -155,7 +157,25 @@ def Compute_Strategic_IOEs(mx,aggregator,t,solve=True):
     def limit_total_network_capacity(m, n):
         return (m.import_DOE[n] - m.export_DOE[n]) <= 0.9*(nodes[n]['P_batt_max'][t] + nodes[n]['load_max'][t] - (nodes[n]['P_batt_min'][t] + nodes[n]['P_solar_min'][t]))
     
-    model.total_capacity_limit = Constraint(nodes.keys(), rule = limit_total_network_capacity)                                                   
+    #model.total_capacity_limit = Constraint(nodes.keys(), rule = limit_total_network_capacity)                                                   
+    
+    #def limit_total_network_capacity2(m):
+    #    return sum(m.import_DOE[n] for n in nodes.keys()) - sum(m.export_DOE[n] for n in nodes.keys()) <= 0.8*(sum(m.upper_IOE[n] for n in nodes.keys()) - sum(m.lower_IOE[n] for in in nodes.keys()))
+    
+    #model.total_capacity_limit = Constraint(rule = limit_total_network_capacity2)       
+    
+    def constrain_imports(model):
+        m = model.model()
+        return sum(m.import_DOE[n] for n in nodes.keys()) <= c.cf_import*sum(m.upper_IOE[n] for n in nodes.keys())
+    
+    def constrain_exports(model):
+        m = model.model()
+        return sum(m.export_DOE[n] for n in nodes.keys()) <= c.cf_export*sum(m.lower_IOE[n] for n in nodes.keys())
+    
+    model.dso.import_capacity_limit = Constraint(rule = constrain_imports)
+    
+    model.dso.export_capacity_limit = Constraint(rule = constrain_exports)
+    
     
     if solve:
         solver = pao.Solver("pao.pyomo.FA", mip_solver ='cplex_direct')

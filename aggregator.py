@@ -296,7 +296,7 @@ def Aggregator_Model(aggregator,t,mode='prediction',horizon=conf.horizon_interva
     model.LP_solar_constr = Constraint(nodes.keys(), T, rule = L_solar_P_rule)
     model.L_bid_constr = Constraint(nodes.keys(), T, rule = L_bid_constraint)
 
-#Connectivity
+#Connectivity, strategic behaviour not implemented
 
     if aggregator['Behaviour'] == 'Non-strategic':
         model.availability_constraint = Constraint(nodes.keys(), T, rule = random_online_status)
@@ -348,6 +348,7 @@ def Write_Prediction_Data(aggregator,model,t,IOEs='inactive'):
             aggregator['Nodes'][node]['P_meter'][t] = model.P_import[node,t].value + model.P_export[node,t].value
     else:
         if aggregator['Behaviour'] == 'Non-strategic':
+            raise TypeError('Fuck, how did you get here?')
             for node in nodes:
                 iioe = model.P_meter[node,t].value + model.L_bid[node,t].value
                 eioe = model.P_meter[node,t].value - model.R_bid[node,t].value
@@ -361,6 +362,7 @@ def Write_Prediction_Data(aggregator,model,t,IOEs='inactive'):
                 aggregator['Nodes'][node]['Online'][t] = model.Online[node,t].value
             
             stgy.Compute_Strategic_IOEs(model, aggregator, t)
+            #stgy.Update_Constraint_Factors(aggregator)
             
             
 
